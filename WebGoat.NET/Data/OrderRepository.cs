@@ -46,13 +46,32 @@ namespace WebGoatCore.Data
 
             using (var command = _context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = sql;
+                var parameters = new
+                {
+                    CustomerId = order.CustomerId,
+                    EmployeeId = order.EmployeeId,
+                    OrderDate = order.OrderDate,
+                    RequiredDate = order.RequiredDate,
+                    ShippedDate = order.ShippedDate,
+                    ShipVia = order.ShipVia,
+                    Freight = order.Freight,
+                    ShipName = order.ShipName,
+                    ShipAddress = order.ShipAddress,
+                    ShipCity = order.ShipCity,
+                    ShipRegion = order.ShipRegion,
+                    ShipPostalCode = order.ShipPostalCode,
+                    ShipCountry = order.ShipCountry
+                };
+
+                command.CommandText = "INSERT INTO Orders (CustomerId, EmployeeId, OrderDate, RequiredDate, ShippedDate, ShipVia, Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry) VALUES (@CustomerId, @EmployeeId, @OrderDate, @RequiredDate, @ShippedDate, @ShipVia, @Freight, @ShipName, @ShipAddress, @ShipCity, @ShipRegion, @ShipPostalCode, @ShipCountry); SELECT OrderID FROM Orders ORDER BY OrderID DESC LIMIT 1;";
+                command.Parameters.Add(parameters);
                 _context.Database.OpenConnection();
 
                 using var dataReader = command.ExecuteReader();
                 dataReader.Read();
                 order.OrderId = Convert.ToInt32(dataReader[0]);
             }
+          
 
             sql = ";\nINSERT INTO OrderDetails (" +
                 "OrderId, ProductId, UnitPrice, Quantity, Discount" +
